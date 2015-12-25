@@ -14,7 +14,11 @@ settings['duplicate_html'] = True
 settings['output_extension'] = '.html'
 settings['verbose'] = True
 settings['pandoc_opts'] = ['--mathjax']
+settings['sitemap'] = True
+settings['sitemap_prettyprint'] = True
+settings['rss'] = True
 settings['styles'] = []
+settings['site_root'] = ''
 
 # Error constants
 WRONG_ARG  = 2
@@ -80,10 +84,47 @@ def generate(idir, odir):
     if (not odir.is_dir()):
         print("Output directory isn't a directory...");
         exit(WRONG_ODIR)
-    crawl(idir, idir, odir)
+    links = crawl(idir, idir, odir)
+    if settings['sitemap']:
+        sitemap(odir, links)
+
+# Expect links = {'regular : [], blogs = [{'root' : '', 'links' : []}]}
+#        odir should be Path object
+def sitemap(odir, links):
+    import xml.etree.ElementTree as ET
+
+    urlset = ET.Element('urlset')
+    for x in links['regular']:
+        path = x
+        if settings['site_root']:
+            path = settings['site_root'] + path
+        url = ET.SubElement(urlset, 'url')
+        ET.SubElement(url, 'loc').text = path
+
+    if settings['sitemap_prettyprint']:
+        indent(urlset)
+    tree = ET.ElementTree(urlset)
+    tree.write(str(odir / 'sitemap.xml'), xml_declaration=True)
+
+# Indent XML function for pretty output
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
 
 # Assert idir and odir are directories
 def crawl(root, idir, odir):
+    links = {'regular' : [], 'blogs' : [] }
     verbose("Browsing", idir, odir)
     for x in idir.glob('*'):
         if x.is_dir():
@@ -95,17 +136,22 @@ def crawl(root, idir, odir):
                     y.mkdir()
                 except:
                     warning("Can't create {0} directory : {0} ignored.".format(str(y)))
-            crawl(root, x, y)
+            new_links = crawl(root, x, y)
+            links['regular'] += new_links['regular']
+            links['blogs'] += new_links['blogs']
             continue
         #Markdown files
         elif x.suffix == '.md':
             pandoc(root, str(x), str(odir / x.stem) + '.html')
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
+                links['regular'] += [str(x)]
         #HTML files
         elif x.suffix == '.html':
             if settings['duplicate_html']:
                 shutil.copy(str(x), str(odir))
+                links['regular'] += [str(x)]
+    return links
 
 
 if __name__ == "__main__":
