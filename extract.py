@@ -53,10 +53,7 @@ def main(argv):
     generate(input_directory, output_directory)
 
 def pandoc(root, ifile, ofile, level = 0):
-    #TODO : Add finer control
-    #        '-c', '$SITE/style.css',
-
-    #Look for header or footer
+    # Look for header or footer
     hf = []
     if settings['auto_header']:
         file = root / settings['auto_header']
@@ -76,7 +73,7 @@ def pandoc(root, ifile, ofile, level = 0):
         '-s',
         '-t', 'html5'
     ] + hf + settings['pandoc_opts']
-    #Add styles
+    # Add styles
     for style in settings['styles']:
         pan_cmd += ['-c',  '../' * level + style]
 
@@ -91,7 +88,7 @@ def generate(idir, odir):
         print("Output directory isn't a directory...");
         exit(WRONG_ODIR)
 
-    #Load settings located in input directory
+    # Load settings located in input directory
     settings_file = idir / settings['auto_settings']
     if settings['auto_settings'] and settings_file.exists():
         with open(str(settings_file), 'r') as stream:
@@ -140,12 +137,12 @@ def indent(elem, level=0):
 def crawl(root, idir, odir, level = 0):
     links = {'regular' : [], 'blogs' : [] }
 
-    #Display a message in verbose mode
+    # Display a message in verbose mode
     verbose("Browsing", idir, odir)
 
-    #Look at all the files in the directory
+    # Look at all the files in the directory
     for x in idir.glob('*'):
-        #Sub directory
+        # Sub directory
         if x.is_dir():
             y = odir / x.name
             if (y.is_file()):
@@ -155,11 +152,15 @@ def crawl(root, idir, odir, level = 0):
                     y.mkdir()
                 except:
                     warning("Can't create {0} directory : {0} ignored.".format(str(y)))
-            new_links = crawl(root, x, y, level + 1)
+            # Blog mode :
+            if x.name == 'blog':
+                new_links = blog(root, x, y, level + 1)
+            else:
+                new_links = crawl(root, x, y, level + 1)
             links['regular'] += new_links['regular']
             links['blogs'] += new_links['blogs']
             continue
-        #A file used by the script
+        # A file used by the script
         if root == idir:
             if settings['auto_header'] and settings['auto_header'] == str(x.name):
                 continue
@@ -167,13 +168,13 @@ def crawl(root, idir, odir, level = 0):
                 continue
             if settings['auto_style'] and settings['auto_style'] == str(x.name):
                 shutil.copy(str(x), str(odir))
-        #Markdown files
+        # Markdown files
         if x.suffix == '.md':
             pandoc(root, str(x), str(odir / x.stem) + '.html', level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
                 links['regular'] += [str(x.relative_to(root))]
-        #HTML files
+        # HTML files
         elif x.suffix == '.html' or x.suffix == 'htm':
             if settings['duplicate_html']:
                 shutil.copy(str(x), str(odir))
@@ -184,6 +185,9 @@ def crawl(root, idir, odir, level = 0):
             shutil.copy(str(x), str(odir))
     return links
 
+# Assert idir and odir are directories
+def blog(root, idir, odir, level = 0):
+    return []
 
 if __name__ == "__main__":
    main(sys.argv[1:])
