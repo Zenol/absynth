@@ -83,12 +83,21 @@ def pandoc(root, ifile, ofile, level = 0):
     subprocess.call(pan_cmd + ['-o', ofile] + [ifile])
 
 def generate(idir, odir):
+    global settings
     if (not idir.is_dir()):
         print("Input directory isn't a directory...");
         exit(WRONG_IDIR)
     if (not odir.is_dir()):
         print("Output directory isn't a directory...");
         exit(WRONG_ODIR)
+
+    #Load settings located in input directory
+    settings_file = idir / settings['auto_settings']
+    if settings['auto_settings'] and settings_file.exists():
+        with open(str(settings_file), 'r') as stream:
+            settings = yaml.load(stream)
+
+    settings.update()
     links = crawl(idir, idir, odir)
     if settings['sitemap']:
         sitemap(odir, links)

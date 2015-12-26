@@ -16,6 +16,8 @@ duplicate_files : True
 #Extension of the generated files
 output_extension : '.html'
 
+#Load automatically this yaml file if it exists
+auto_settings : 'settings.yaml'
 #File automatically included as header (can be empty)
 auto_header : 'header.html'
 #File automatically included as footer (can be empty)
