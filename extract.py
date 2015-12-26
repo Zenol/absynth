@@ -163,7 +163,7 @@ def crawl(root, idir, odir, level = 0):
             pandoc(root, str(x), str(odir / x.stem) + '.html', level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
-                links['regular'] += [''.join(list(x.parts)[len(root.parts):])]
+                links['regular'] += [str(x.relative_to(root))]
         #HTML files
         elif x.suffix == '.html' or x.suffix == 'htm':
             if settings['duplicate_html']:
