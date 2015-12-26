@@ -62,7 +62,7 @@ def main(argv):
 
     generate(input_directory, output_directory)
 
-def pandoc(root, ifile, ofile):
+def pandoc(root, ifile, ofile, level = 0):
     #TODO : Add finer control
     #        '-c', '$SITE/style.css',
 
@@ -79,7 +79,7 @@ def pandoc(root, ifile, ofile):
     if settings['auto_style']:
         file = root / settings['auto_style']
         if file.exists():
-            hf += ['-c', str(file)]
+            hf += ['-c', '../' * level + settings['auto_style']]
     #Basic command
     pan_cmd = [
         'pandoc',
@@ -88,7 +88,7 @@ def pandoc(root, ifile, ofile):
     ] + hf + settings['pandoc_opts']
     #Add styles
     for style in settings['styles']:
-        pan_cmd += ['-c', str(Path(root) / style)]
+        pan_cmd += ['-c',  '../' * level + style]
 
     subprocess.call(pan_cmd + ['-o', ofile] + [ifile])
 
@@ -138,7 +138,7 @@ def indent(elem, level=0):
             elem.tail = i
 
 # Assert idir and odir are directories
-def crawl(root, idir, odir):
+def crawl(root, idir, odir, level = 0):
     links = {'regular' : [], 'blogs' : [] }
 
     #Display a message in verbose mode
@@ -156,7 +156,7 @@ def crawl(root, idir, odir):
                     y.mkdir()
                 except:
                     warning("Can't create {0} directory : {0} ignored.".format(str(y)))
-            new_links = crawl(root, x, y)
+            new_links = crawl(root, x, y, level + 1)
             links['regular'] += new_links['regular']
             links['blogs'] += new_links['blogs']
             continue
@@ -170,7 +170,7 @@ def crawl(root, idir, odir):
                 shutil.copy(str(x), str(odir))
         #Markdown files
         if x.suffix == '.md':
-            pandoc(root, str(x), str(odir / x.stem) + '.html')
+            pandoc(root, str(x), str(odir / x.stem) + '.html', level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
                 links['regular'] += [str(x)]
