@@ -135,7 +135,7 @@ def indent(elem, level=0):
 def compute_link(root, ifile):
     ifile = ifile.relative_to(root)
     ifile = ifile.with_suffix(settings['output_extension'])
-    return ifile
+    return str(ifile)
 
 # Assert idir and odir are directories
 def crawl(root, idir, odir, level = 0):
@@ -192,6 +192,7 @@ def crawl(root, idir, odir, level = 0):
 
 # Assert idir and odir are directories
 def blog(root, idir, odir, level = 0):
+    import tempfile
     links = {'articles': []}
 
     # Generate articles
@@ -219,9 +220,44 @@ def blog(root, idir, odir, level = 0):
                        level)
                 if settings['duplicate_md']:
                     shutil.copy(str(file), str(odir / article))
-                links['articles'] += [{'folder' : article,
-                                       'file'   : compute_link(root, ifile)}]
-    print(links)
+                # Article's description
+                article_desc = {'folder' : article,
+                                'lang'   : lang,
+                                'title'  : article,
+                                'date'   : '',
+                                'file'   : compute_link(idir, ifile)}
+                # Parse article's yaml
+                info = {}
+                with open(str(ifile), 'r') as stream:
+                    yaml_input = ''
+                    if stream.readline()[:3] == '---':
+                        while True:
+                            line = stream.readline()
+                            if line[:3] == '...' or line[:3] == '---':
+                                break
+                            yaml_input += line
+                    info = yaml.load(yaml_input)
+                # Fusione les informations
+                article_desc.update(info)
+                print(article_desc)
+                links['articles'] += [article_desc]
+    # Generate index page
+    tmp_file = tempfile.NamedTemporaryFile(prefix='absynth_', delete = False, mode='w+')
+    tmp_file.write('---\n'
+                   'title: ' + settings['blog_title'] + '\n'
+                   '...\n'
+                   '# ' + settings['blog_h1'] + '\n')
+    for article in links['articles']:
+        tmp_file.write('*  '
+                       + article['date']
+                       + ' - [' + article['lang'].upper()
+                       + ' - '  + article['title'] + ']('
+                       + article['file']
+                       + ')\n')
+    tmp_file.close()
+    pandoc(root, tmp_file.name, str(odir / ('index' + settings['output_extension'])), level)
+    Path(tmp_file.name).unlink()
+
     return {'regular' : [], 'blogs' : links }
 
 if __name__ == "__main__":

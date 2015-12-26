@@ -1,10 +1,10 @@
 ---
-title: 'This is the title of this page'
+title: 'Article 2 - title of the page'
 author:
 - Spire Spiegel
 - Faye Valentine
 date: September 1, 2015
-tafs: [lorem, ipsum]
+tags: [lorem, ipsum]
 ...
 
 Article 2

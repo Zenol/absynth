@@ -29,7 +29,13 @@ auto_style : 'style.css'
 styles : []
 
 #
-#Flux and sitemap generation
+# Blog settings
+#
+blog_title : 'Blog'
+blog_h1 : 'List of articles : '
+
+#
+# Flux and sitemap generation
 #
 sitemap : True
 sitemap_prettyprint : True
