@@ -34,6 +34,9 @@ styles : []
 blog_title : 'Blog'
 blog_h1 : 'List of articles : '
 
+# Reverse the order of the article (more recent in first)
+reverse_order : True
+
 #
 # Flux and sitemap generation
 #

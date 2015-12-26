@@ -5,6 +5,7 @@
 import sys, getopt, shutil, subprocess
 import yaml
 from pathlib import Path
+import dateutil.parser
 
 
 # Config
@@ -239,7 +240,9 @@ def blog(root, idir, odir, level = 0):
                     info = yaml.load(yaml_input)
                 # Fusione les informations
                 article_desc.update(info)
-                print(article_desc)
+                article_desc.update(
+                    {'date_object' : dateutil.parser.parse(article_desc['date']).date()})
+
                 links['articles'] += [article_desc]
     # Generate index page
     tmp_file = tempfile.NamedTemporaryFile(prefix='absynth_', delete = False, mode='w+')
@@ -247,6 +250,8 @@ def blog(root, idir, odir, level = 0):
                    'title: ' + settings['blog_title'] + '\n'
                    '...\n'
                    '# ' + settings['blog_h1'] + '\n')
+    links['articles'].sort(key = lambda article_desc: article_desc['date_object'],
+                           reverse = settings['reverse_order'])
     for article in links['articles']:
         tmp_file.write('*  '
                        + article['date']

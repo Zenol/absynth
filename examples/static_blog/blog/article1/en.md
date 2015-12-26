@@ -3,7 +3,7 @@ title: 'Article 1 - Title of the page'
 author:
 - Spire Spiegel
 - Faye Valentine
-date: September 1, 2015
+date: September 1, 2010
 tags: [lorem, ipsum]
 ...
 
