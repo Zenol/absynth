@@ -1,0 +1,41 @@
+---
+#
+# Generator settings
+#
+
+#The root of your website, needed for sitemaps
+site_root : 'http://website.net'
+
+#Allow the copy of md files
+duplicate_md    :  True
+#Allow the copy of html and htm files
+duplicate_html  : True
+#Allow the copy of any other file
+duplicate_files : True
+
+#Extension of the generated files
+output_extension : '.html'
+
+#File automatically included as header (can be empty)
+auto_header : 'header.html'
+#File automatically included as footer (can be empty)
+auto_footer : 'footer.html'
+#CSS file automatically linked to (can be empty)
+auto_style : 'style.css'
+#A list of your CSS files you want to include. Path starts
+#  at the root of the input folder.
+styles : []
+
+#
+#Flux and sitemap generation
+#
+sitemap : True
+sitemap_prettyprint : True
+rss : True
+
+#
+# Script settings
+#
+
+verbose : True
+pandoc_opts : ['--mathjax']

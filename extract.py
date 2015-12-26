@@ -3,25 +3,12 @@
 # This script generate a static website from a tree containing markdown files
 
 import sys, getopt, shutil, subprocess
+import yaml
 from pathlib import Path
 
 
-# Config (TODO : move in config file)
+# Config
 settings = {}
-settings['duplicate_md'] = True
-settings['duplicate_files'] = True
-settings['duplicate_html'] = True
-settings['output_extension'] = '.html'
-settings['verbose'] = True
-settings['pandoc_opts'] = ['--mathjax']
-settings['sitemap'] = True
-settings['sitemap_prettyprint'] = True
-settings['auto_header'] = 'header.html'
-settings['auto_footer'] = 'footer.html'
-settings['auto_style'] = 'style.css'
-settings['rss'] = True
-settings['styles'] = []
-settings['site_root'] = 'http://website.net'
 
 # Error constants
 WRONG_ARG  = 2
@@ -40,6 +27,9 @@ def help():
 
 
 def main(argv):
+    global settings
+    with open('settings.yaml', 'r') as stream:
+        settings = yaml.load(stream)
     input_directory = ''
     output_directory = ''
     try:
@@ -175,7 +165,7 @@ def crawl(root, idir, odir, level = 0):
                 shutil.copy(str(x), str(odir))
                 links['regular'] += [''.join(list(x.parts)[len(root.parts):])]
         #HTML files
-        elif x.suffix == '.html':
+        elif x.suffix == '.html' or x.suffix == 'htm':
             if settings['duplicate_html']:
                 shutil.copy(str(x), str(odir))
                 links['regular'] += [str(x)]
