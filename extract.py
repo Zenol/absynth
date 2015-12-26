@@ -179,6 +179,10 @@ def crawl(root, idir, odir, level = 0):
             if settings['duplicate_html']:
                 shutil.copy(str(x), str(odir))
                 links['regular'] += [str(x)]
+        elif x.suffix == '.css' and x.name in settings['styles']:
+            shutil.copy(str(x), str(odir))
+        elif settings['duplicate_files']:
+            shutil.copy(str(x), str(odir))
     return links
 
 
