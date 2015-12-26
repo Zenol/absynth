@@ -16,6 +16,9 @@ settings['verbose'] = True
 settings['pandoc_opts'] = ['--mathjax']
 settings['sitemap'] = True
 settings['sitemap_prettyprint'] = True
+settings['auto_header'] = 'header.html'
+settings['auto_footer'] = 'footer.html'
+settings['auto_style'] = 'style.css'
 settings['rss'] = True
 settings['styles'] = []
 settings['site_root'] = ''
@@ -62,15 +65,27 @@ def main(argv):
 def pandoc(root, ifile, ofile):
     #TODO : Add finer control
     #        '-c', '$SITE/style.css',
-    #        '-A', '$SITE/footer.html',
-    #        '-B', '$SITE/header.html',
 
+    #Look for header or footer
+    hf = []
+    if settings['auto_header']:
+        file = root / settings['auto_header']
+        if file.exists():
+            hf += ['-B', str(file)]
+    if settings['auto_footer']:
+        file = root / settings['auto_footer']
+        if file.exists():
+            hf += ['-A', str(file)]
+    if settings['auto_style']:
+        file = root / settings['auto_style']
+        if file.exists():
+            hf += ['-c', str(file)]
     #Basic command
     pan_cmd = [
         'pandoc',
         '-s',
         '-t', 'html5'
-    ] + settings['pandoc_opts']
+    ] + hf + settings['pandoc_opts']
     #Add styles
     for style in settings['styles']:
         pan_cmd += ['-c', str(Path(root) / style)]
@@ -125,8 +140,13 @@ def indent(elem, level=0):
 # Assert idir and odir are directories
 def crawl(root, idir, odir):
     links = {'regular' : [], 'blogs' : [] }
+
+    #Display a message in verbose mode
     verbose("Browsing", idir, odir)
+
+    #Look at all the files in the directory
     for x in idir.glob('*'):
+        #Sub directory
         if x.is_dir():
             y = odir / x.name
             if (y.is_file()):
@@ -140,8 +160,16 @@ def crawl(root, idir, odir):
             links['regular'] += new_links['regular']
             links['blogs'] += new_links['blogs']
             continue
+        #A file used by the script
+        if root == idir:
+            if settings['auto_header'] and settings['auto_header'] == str(x.name):
+                continue
+            if settings['auto_footer'] and settings['auto_footer'] == str(x.name):
+                continue
+            if settings['auto_style'] and settings['auto_style'] == str(x.name):
+                shutil.copy(str(x), str(odir))
         #Markdown files
-        elif x.suffix == '.md':
+        if x.suffix == '.md':
             pandoc(root, str(x), str(odir / x.stem) + '.html')
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
