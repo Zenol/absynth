@@ -21,7 +21,7 @@ settings['auto_footer'] = 'footer.html'
 settings['auto_style'] = 'style.css'
 settings['rss'] = True
 settings['styles'] = []
-settings['site_root'] = ''
+settings['site_root'] = 'http://website.net'
 
 # Error constants
 WRONG_ARG  = 2
@@ -112,7 +112,7 @@ def sitemap(odir, links):
     for x in links['regular']:
         path = x
         if settings['site_root']:
-            path = settings['site_root'] + path
+            path = str(Path(settings['site_root']) / path)
         url = ET.SubElement(urlset, 'url')
         ET.SubElement(url, 'loc').text = path
 
@@ -173,7 +173,7 @@ def crawl(root, idir, odir, level = 0):
             pandoc(root, str(x), str(odir / x.stem) + '.html', level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
-                links['regular'] += [str(x)]
+                links['regular'] += [''.join(list(x.parts)[len(root.parts):])]
         #HTML files
         elif x.suffix == '.html':
             if settings['duplicate_html']:
