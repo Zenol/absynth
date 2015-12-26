@@ -76,7 +76,6 @@ def pandoc(root, ifile, ofile, level = 0):
     # Add styles
     for style in settings['styles']:
         pan_cmd += ['-c',  '../' * level + style]
-
     subprocess.call(pan_cmd + ['-o', ofile] + [ifile])
 
 def generate(idir, odir):
@@ -187,7 +186,35 @@ def crawl(root, idir, odir, level = 0):
 
 # Assert idir and odir are directories
 def blog(root, idir, odir, level = 0):
-    return []
+    links = {'articles': []}
+
+    # Generate articles
+    for articlef in idir.glob('*'):
+        if not articlef.is_dir():
+            continue
+        # Create article folder
+        article = articlef.name
+        if not (odir / article).exists():
+            (odir / article).mkdir()
+        for file in articlef.glob('*'):
+            # Data folder
+            if file.is_dir() and file.name == 'data':
+                new_data_dir = odir / article / file.name
+                if new_data_dir.exists():
+                    shutil.rmtree(str(new_data_dir))
+                shutil.copytree(str(file), str(new_data_dir))
+            if file.is_file() and file.suffix == '.md':
+                lang = file.stem
+                ifile = file
+                ofile = odir / article / (lang  + '.html')
+                pandoc(root,
+                       str(ifile),
+                       str(ofile),
+                       level)
+                if settings['duplicate_md']:
+                    shutil.copy(str(file), str(odir / article))
+
+    return {'regular' : [], 'blogs' : links }
 
 if __name__ == "__main__":
    main(sys.argv[1:])
