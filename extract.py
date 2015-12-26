@@ -132,6 +132,11 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
+def compute_link(root, ifile):
+    ifile = ifile.relative_to(root)
+    ifile = ifile.with_suffix(settings['output_extension'])
+    return ifile
+
 # Assert idir and odir are directories
 def crawl(root, idir, odir, level = 0):
     links = {'regular' : [], 'blogs' : [] }
@@ -169,10 +174,11 @@ def crawl(root, idir, odir, level = 0):
                 shutil.copy(str(x), str(odir))
         # Markdown files
         if x.suffix == '.md':
-            pandoc(root, str(x), str(odir / x.stem) + '.html', level)
+            pandoc(root, str(x),
+                   str(odir / x.stem) + settings['output_extension'], level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
-                links['regular'] += [str(x.relative_to(root))]
+            links['regular'] += [compute_link(root, x)]
         # HTML files
         elif x.suffix == '.html' or x.suffix == 'htm':
             if settings['duplicate_html']:
@@ -213,7 +219,9 @@ def blog(root, idir, odir, level = 0):
                        level)
                 if settings['duplicate_md']:
                     shutil.copy(str(file), str(odir / article))
-
+                links['articles'] += [{'folder' : article,
+                                       'file'   : compute_link(root, ifile)}]
+    print(links)
     return {'regular' : [], 'blogs' : links }
 
 if __name__ == "__main__":
