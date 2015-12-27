@@ -92,7 +92,9 @@ def generate(idir, odir):
     settings_file = idir / settings['auto_settings']
     if settings['auto_settings'] and settings_file.exists():
         with open(str(settings_file), 'r') as stream:
-            settings = yaml.load(stream)
+            new_settings = yaml.load(stream)
+            if new_settings:
+                settings.update(new_settings)
 
     settings.update()
     links = crawl(idir, idir, odir)
@@ -147,6 +149,9 @@ def crawl(root, idir, odir, level = 0):
 
     # Look at all the files in the directory
     for x in idir.glob('*'):
+        # GIT
+        if x.name == '.git':
+            continue
         # Sub directory
         if x.is_dir():
             y = odir / x.name
@@ -198,6 +203,9 @@ def blog(root, idir, odir, level = 0):
 
     # Generate articles
     for articlef in idir.glob('*'):
+        # GIT
+        if articlef.name == '.git':
+            continue
         if not articlef.is_dir():
             continue
         # Create article folder
@@ -205,6 +213,9 @@ def blog(root, idir, odir, level = 0):
         if not (odir / article).exists():
             (odir / article).mkdir()
         for file in articlef.glob('*'):
+            # GIT
+            if file.name == '.git':
+                continue
             # Data folder
             if file.is_dir() and file.name == 'data':
                 new_data_dir = odir / article / file.name
@@ -239,7 +250,8 @@ def blog(root, idir, odir, level = 0):
                             yaml_input += line
                     info = yaml.load(yaml_input)
                 # Fusione les informations
-                article_desc.update(info)
+                if info:
+                    article_desc.update(info)
                 article_desc.update(
                     {'date_object' : dateutil.parser.parse(article_desc['date']).date()})
 
@@ -253,9 +265,12 @@ def blog(root, idir, odir, level = 0):
     links['articles'].sort(key = lambda article_desc: article_desc['date_object'],
                            reverse = settings['reverse_order'])
     for article in links['articles']:
+        date = ''
+        if article['date']:
+            date = article['date'] + ' - '
         tmp_file.write('*  '
-                       + article['date']
-                       + ' - [' + article['lang'].upper()
+                       + date
+                       + '[' + article['lang'].upper()
                        + ' - '  + article['title'] + ']('
                        + article['file']
                        + ')\n')
