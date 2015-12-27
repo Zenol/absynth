@@ -135,9 +135,10 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
-def compute_link(root, ifile):
+def compute_link(root, ifile, ext):
     ifile = ifile.relative_to(root)
-    ifile = ifile.with_suffix(settings['output_extension'])
+    if ext:
+        ifile = ifile.with_suffix(ext)
     return str(ifile)
 
 # Assert idir and odir are directories
@@ -184,12 +185,12 @@ def crawl(root, idir, odir, level = 0):
                    str(odir / x.stem) + settings['output_extension'], level)
             if settings['duplicate_md']:
                 shutil.copy(str(x), str(odir))
-            links['regular'] += [compute_link(root, x)]
+            links['regular'] += [compute_link(root, x, settings['output_extension'])]
         # HTML files
         elif x.suffix == '.html' or x.suffix == 'htm':
             if settings['duplicate_html']:
                 shutil.copy(str(x), str(odir))
-                links['regular'] += [str(x)]
+                links['regular'] += [compute_link(root, x, None)]
         elif x.suffix == '.css' and x.name in settings['styles']:
             shutil.copy(str(x), str(odir))
         elif settings['duplicate_files']:
@@ -237,7 +238,7 @@ def blog(root, idir, odir, level = 0):
                                 'lang'   : lang,
                                 'title'  : article,
                                 'date'   : '',
-                                'file'   : compute_link(idir, ifile)}
+                                'file'   : compute_link(idir, ifile, settings['output_extension'])}
                 # Parse article's yaml
                 info = {}
                 with open(str(ifile), 'r') as stream:
