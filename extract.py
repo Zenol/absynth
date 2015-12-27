@@ -6,7 +6,7 @@ import sys, getopt, shutil, subprocess
 import yaml
 from pathlib import Path
 import dateutil.parser
-
+import datetime
 
 # Config
 settings = {}
@@ -238,6 +238,7 @@ def blog(root, idir, odir, level = 0):
                                 'lang'   : lang,
                                 'title'  : article,
                                 'date'   : '',
+                                'date_object' : None,
                                 'file'   : compute_link(idir, ifile, settings['output_extension'])}
                 # Parse article's yaml
                 info = {}
@@ -253,9 +254,11 @@ def blog(root, idir, odir, level = 0):
                 # Fusione les informations
                 if info:
                     article_desc.update(info)
-                article_desc.update(
-                    {'date_object' : dateutil.parser.parse(article_desc['date']).date()})
-
+                try:
+                    article_desc.update(
+                        {'date_object' : dateutil.parser.parse(article_desc['date']).date()})
+                except:
+                    warning('Invalide date format for ' + article_desc['folder'])
                 links['articles'] += [article_desc]
     # Generate index page
     tmp_file = tempfile.NamedTemporaryFile(prefix='absynth_', delete = False, mode='w+')
@@ -263,7 +266,9 @@ def blog(root, idir, odir, level = 0):
                    'title: ' + settings['blog_title'] + '\n'
                    '...\n'
                    '# ' + settings['blog_h1'] + '\n')
-    links['articles'].sort(key = lambda article_desc: article_desc['date_object'],
+    links['articles'].sort(key = lambda article_desc:
+                           article_desc['date_object'] if article_desc['date_object']
+                           else datetime.date(datetime.MINYEAR, 1, 1),
                            reverse = settings['reverse_order'])
     for article in links['articles']:
         date = ''
