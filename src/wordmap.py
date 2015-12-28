@@ -3,10 +3,8 @@ from PIL import Image, ImageDraw, ImageFont
 font = None
 
 def build_text_block(w, h, msg, color=(0, 0, 0), bg_color=(255, 255, 255)):
-    import operator
     # Create a temporary image
-    size = tuple(map(operator.add, font.getsize(msg), (0, 0)))
-    tmp = Image.new("RGB", size, bg_color)
+    tmp = Image.new("RGB", font.getsize(msg), bg_color)
     # Draw msg on this image
     draw = ImageDraw.Draw(tmp)
     draw.text((0, 0), msg, color, font=font)
