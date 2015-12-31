@@ -31,8 +31,20 @@ styles : []
 #
 # Blog settings
 #
-blog_title : 'Blog'
+blog_title : 'My blog'
+blog_description : 'My articles'
 blog_h1 : 'List of articles : '
+
+#
+# RSS feed settings
+#
+
+# Number of item displayed
+rss_limit : 15
+# Cathegory of the blog
+rss_category : ''
+# Language of the blog (ex : en-us)
+rss_language : ''
 
 # Reverse the order of the article (more recent in first)
 reverse_order : True
