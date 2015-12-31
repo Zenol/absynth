@@ -45,6 +45,8 @@ rss_limit : 15
 rss_category : ''
 # Language of the blog (ex : en-us)
 rss_language : ''
+# Compute hash of a file as guid
+rss_guid_hash : True
 
 # Reverse the order of the article (more recent in first)
 reverse_order : True
