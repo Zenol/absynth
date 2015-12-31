@@ -101,18 +101,32 @@ def generate(idir, odir):
     if settings['sitemap']:
         sitemap(odir, links)
 
-# Expect links = {'regular : [], blogs = [{'root' : '', 'links' : []}]}
+# Utilitary function for sitemap. Build the absolute path (if possible)
+# to the resource.
+def build_path_string(path):
+    if settings['site_root']:
+        path = str(Path(settings['site_root']) / path)
+    return str(path)
+
+
+# Expect links = {'regular : [], blogs = [{'root' : '', 'articles' : []}]}
 #        odir should be Path object
 def sitemap(odir, links):
     import xml.etree.ElementTree as ET
 
     urlset = ET.Element('urlset')
+
+    # Regular link
     for x in links['regular']:
-        path = x
-        if settings['site_root']:
-            path = str(Path(settings['site_root']) / path)
         url = ET.SubElement(urlset, 'url')
-        ET.SubElement(url, 'loc').text = path
+        ET.SubElement(url, 'loc').text = build_path_string(x)
+
+    # Blogs
+    for blog in links['blogs']:
+        for article in blog['articles']:
+            url = ET.SubElement(urlset, 'url')
+            path = Path(blog['root']) / article['file']
+            ET.SubElement(url, 'loc').text = build_path_string(path)
 
     if settings['sitemap_prettyprint']:
         indent(urlset)
@@ -200,7 +214,9 @@ def crawl(root, idir, odir, level = 0):
 # Assert idir and odir are directories
 def blog(root, idir, odir, level = 0):
     import tempfile
-    links = {'articles': []}
+
+    root_name = str(idir.relative_to(root))
+    links = {'articles': [], 'root' : root_name}
 
     # Generate articles
     for articlef in idir.glob('*'):
@@ -284,7 +300,7 @@ def blog(root, idir, odir, level = 0):
     pandoc(root, tmp_file.name, str(odir / ('index' + settings['output_extension'])), level)
     Path(tmp_file.name).unlink()
 
-    return {'regular' : [], 'blogs' : links }
+    return {'regular' : [], 'blogs' : [links] }
 
 if __name__ == "__main__":
    main(sys.argv[1:])
