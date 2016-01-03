@@ -226,6 +226,8 @@ def crawl(root, idir, odir, level = 0):
             continue
         # A file used by the script
         if root == idir:
+            if str(x.name) in settings['exclude_files']:
+                continue
             if settings['auto_header'] and settings['auto_header'] == str(x.name):
                 continue
             if settings['auto_footer'] and settings['auto_footer'] == str(x.name):

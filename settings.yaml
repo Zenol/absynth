@@ -28,6 +28,9 @@ auto_style : 'style.css'
 #  at the root of the input folder.
 styles : []
 
+#List of excluded files
+exclude_files : ['README.md']
+
 #
 # Blog settings
 #
