@@ -234,6 +234,9 @@ def crawl(root, idir, odir, level = 0):
                 continue
             if settings['auto_style'] and settings['auto_style'] == str(x.name):
                 shutil.copy(str(x), str(odir))
+        # Skip files from exclude_files
+        if compute_link(root, x, "") in settings['exclude_files']:
+            continue
         # Markdown files
         if x.suffix == '.md':
             pandoc(root, str(x),
