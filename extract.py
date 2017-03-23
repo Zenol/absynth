@@ -304,7 +304,8 @@ def blog(root, idir, odir, level = 0):
                                 'ifile'  : ifile}
                 # Parse article's yaml
                 info = {}
-                with open(str(ifile), 'r') as stream:
+                print("INFO: Compiling " + str(ifile));
+                with open(str(ifile), 'r', encoding='utf-8') as stream:
                     yaml_input = ''
                     if stream.readline()[:3] == '---':
                         while True:
@@ -323,7 +324,7 @@ def blog(root, idir, odir, level = 0):
                     warning('Invalide date format for ' + article_desc['folder'])
                 links['articles'] += [article_desc]
     # Generate index page
-    tmp_file = tempfile.NamedTemporaryFile(prefix='absynth_', delete = False, mode='w+')
+    tmp_file = tempfile.NamedTemporaryFile(prefix='absynth_', delete = False, mode='w+', encoding="utf-8")
     tmp_file.write('---\n'
                    'title: ' + settings['blog_title'] + '\n'
                    '...\n'
